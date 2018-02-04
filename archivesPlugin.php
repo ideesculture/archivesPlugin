@@ -51,6 +51,26 @@
 					)
 			);
 		}
-		
+        # -------------------------------------------------------
+        /**
+         * Insert activity menu
+         */
+        public function hookRenderMenuBar($pa_menu_bar) {
+            if ($o_req = $this->getRequest()) {
+                //if (!$o_req->user->canDoAction('can_use_media_import_plugin')) { return true; }
+                $pa_menu_bar["find"]["navigation"]['archives_menu'] = array(
+                    'displayName' => _t('Archives'),
+                    "default" => array(
+                        'module' => 'archives',
+                        'controller' => 'archives',
+                        'action' => 'Index'
+                    )
+                );
+                //var_dump($pa_menu_bar["find"]["navigation"]);die();
+
+            }
+
+            return $pa_menu_bar;
+        }
 	}
 ?>
