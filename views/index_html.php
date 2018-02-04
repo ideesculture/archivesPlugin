@@ -6,6 +6,7 @@
 	$template = $this->getVar("template");
 	error_reporting(E_ERROR);
 	?>
+<h1>Archives</h1>
 <div id="hierarchy<?php print ($id ? "For".$id : "Root"); ?>">
 
 </div>
