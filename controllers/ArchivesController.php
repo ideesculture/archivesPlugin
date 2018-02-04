@@ -95,6 +95,7 @@
 			$this->view->setVar("level", $level);
 
 			$this->view->setVar("template", $this->opo_config->get("template"));
+            $this->view->setVar("printLevel", $this->opo_config->get("printLevel"));
 			print $this->render('fetch_html.php');
 			exit();
 		}
