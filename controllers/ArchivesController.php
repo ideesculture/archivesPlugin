@@ -81,7 +81,7 @@
 
 			$result_rows = [];
 			while($qr_result->nextRow()) {
-				$query2 = "SELECT count(object_id) as numchildren FROM ca_objects WHERE parent_id = ".$qr_result->get('object_id');
+				$query2 = "SELECT count(object_id) as numchildren FROM ca_objects WHERE parent_id = ".$qr_result->get('object_id')." AND deleted=0";
 				$qr2_result = $o_data->query($query2);
 				$qr2_result->nextRow();
 				$numchildren=$qr2_result->getRow()["numchildren"];
