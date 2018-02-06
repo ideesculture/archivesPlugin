@@ -24,7 +24,7 @@
 		margin-bottom:5px;
 		display:inline-block;
 	}
-	a[id^="expandButton"], a[id^="shrinkButton"] {
+	a[id^="expandButton"], a[id^="shrinkButton"], a[id^="exportButton"], a[id^="printButton"] {
 		color:black;
 		cursor:pointer;
 		text-decoration: none;

@@ -1,16 +1,29 @@
 <?php
 	$template = $this->getVar("template");
+	//var_dump($template);die();
 	$result_rows = $this->getVar("result_rows");
 	$level = intval($this->getVar("level"));
     $printLevel = $this->getVar("printLevel");
     if ($printLevel == "all") $printLevel=$level;
+    $exportLevel = $this->getVar("exportLevel");
+    if ($exportLevel == "all") $exportLevel=$level;
+
+    function getTemplateForItem($item, $template) {
+        $type = $item->get("ca_objects.type_id");
+        if(isset($template[$type]) && trim($template[$type])) {
+            $return = $template[$type];
+        } else {
+            $return = $template["_default"];
+        }
+        return $return;
+    }
 
 	$i=0;
 	foreach($result_rows as $row) {
 		$object_id = $row['object_id'];
 		$t_item2 = new ca_objects($object_id);
 
-		$row_template = $template;
+		$row_template = getTemplateForItem($t_item2, $template);
 		if($row["numchildren"]>0) {
 			$row_template = str_ireplace(
 				"^expandButton",
@@ -23,15 +36,22 @@
 		}
 
         $row_template = str_replace("^level",$level,$row_template);
+
         if($printLevel >= $level) {
-            $printButton = "<a href='/gestion/index.php/archives/archives/Export/id/".$object_id."'><i class=\"fa fa-print\" aria-hidden=\"true\"></i></a>";
+            $printButton = "<a href='/gestion/index.php/archives/archives/Export/id/".$object_id."' id='printButton".$object_id."'><i class=\"fa fa-print\" aria-hidden=\"true\"></i></a>";
         } else {
             $printButton = "";
         }
-
         $row_template = str_replace("^printButton",$printButton,$row_template);
 
-		$result = $t_item2->getWithTemplate($row_template);
+        if($exportLevel >= $level) {
+            $exportButton = "<a href='/gestion/index.php/archives/archives/Export/id/".$object_id."' id='exportButton".$object_id."'><i class=\"fa fa-print\" aria-hidden=\"true\"></i></a>";
+        } else {
+            $exportButton = "";
+        }
+        $row_template = str_replace("^exportButton",$exportButton,$row_template);
+
+        $result = $t_item2->getWithTemplate($row_template);
 		print $result."\n";
 		print "<div id='hierarchyFor".$object_id."' class='hierarchyFor'></div>";
 		$i++;

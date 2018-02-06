@@ -27,7 +27,7 @@
         protected $opa_list_of_lists; // list of lists
         protected $opa_listIdsFromIdno; // list of lists
         protected $opa_locale; // locale id
-
+		private $opo_list;
  		# -------------------------------------------------------
  		# Constructor
  		# -------------------------------------------------------
@@ -42,7 +42,7 @@
  			}*/
 
  			$this->opo_config = Configuration::load(__CA_APP_DIR__.'/plugins/archives/conf/archives.conf');
-
+			$this->opo_list = new ca_lists("object_types");
         }
 
  		# -------------------------------------------------------
@@ -94,8 +94,9 @@
 			$this->view->setVar("result_rows", $result_rows);
 			$this->view->setVar("level", $level);
 
-			$this->view->setVar("template", $this->opo_config->get("template"));
+			$this->view->setVar("template", $this->ConvertValuesToIdsInsideTemplate($this->opo_config->get("displayTemplate")));
             $this->view->setVar("printLevel", $this->opo_config->get("printLevel"));
+            $this->view->setVar("exportLevel", $this->opo_config->get("exportLevel"));
 			print $this->render('fetch_html.php');
 			exit();
 		}
@@ -106,17 +107,40 @@
 			$this->view->setVar("object_id", $id);
 			$item = new ca_objects($id);
 			$this->view->setVar("item", $item);
-			$this->view->setVar("template", $this->opo_config->get("template"));
-			$this->view->setVar("inner_template", $this->opo_config->get("inner_template"));
-			$this->view->setVar("templateH1", $this->opo_config->get("templateH1"));
+			$this->view->setVar("template", $this->ConvertValuesToIdsInsideTemplate($this->opo_config->get("printTemplate")));
 			$result = $this->render('export_html.php');
-			print $result;die();
-
-			$renderer = new WLPlugPDFRendererPhantomJS();
-			$renderer->setPage("A4", "portrait", "2.5cm", "1cm", "2.5cm", "1cm");
-			$renderer->render($result, ["stream"=>true, "filename"=>"fonds.pdf" ]);
+			print $result;
 			exit();
 		}
 
+        public function Pdf() {
+            //error_reporting(E_ALL);
+            $id= $this->request->getParameter("id", pInteger);
+            $this->view->setVar("object_id", $id);
+            $item = new ca_objects($id);
+            $this->view->setVar("item", $item);
+            $this->view->setVar("template", $this->ConvertValuesToIdsInsideTemplate($this->opo_config->get("printTemplate")));
+            $this->view->setVar("inner_template", $this->opo_config->get("inner_template"));
+            $this->view->setVar("templateH1", $this->opo_config->get("templateH1"));
+            $result = $this->render('pdf_html.php');
+            //print $result;die();
+
+            $renderer = new WLPlugPDFRendererPhantomJS();
+            $renderer->setPage("A4", "portrait", "2.5cm", "1cm", "2.5cm", "1cm");
+            $renderer->render($result, ["stream"=>true, "filename"=>"fonds.pdf" ]);
+            exit();
+        }
+
+        private function ConvertValuesToIdsInsideTemplate($template) {
+            foreach($template as $key=>$template_per_id) {
+            	if($key == "_default") continue;
+                //print $key."\n";
+                $type_id  = $this->opo_list->getItemIDFromListByItemValue("object_types", $key);
+                $template[$type_id] = $template[$key];
+                unset($template[$key]);
+            }
+            return $template;
+
+        }
  	}
  ?>
