@@ -44,6 +44,13 @@
         }
         $row_template = str_replace("^printButton",$printButton,$row_template);
 
+        if($pdfLevel >= $level) {
+            $pdfButton = "<span onClick=\"generateArchivesPdf('".$object_id."');\" id='pdfButton".$object_id."'><a style='color:black;'><i class=\"fa fa-file-pdf-o\" aria-hidden=\"true\"></i></a></span>";
+        } else {
+            $printButton = "";
+        }
+        $row_template = str_replace("^pdfButton",$pdfButton,$row_template);
+
         if($exportLevel >= $level) {
             $exportButton = "<a href='/gestion/index.php/archives/archives/Export/id/".$object_id."' id='exportButton".$object_id."'><i class=\"fa fa-print\" aria-hidden=\"true\"></i></a>";
         } else {
