@@ -117,18 +117,44 @@
             //error_reporting(E_ALL);
             $id= $this->request->getParameter("id", pInteger);
             $this->view->setVar("object_id", $id);
+
             $item = new ca_objects($id);
             $this->view->setVar("item", $item);
             $this->view->setVar("template", $this->ConvertValuesToIdsInsideTemplate($this->opo_config->get("printTemplate")));
-            $this->view->setVar("inner_template", $this->opo_config->get("inner_template"));
-            $this->view->setVar("templateH1", $this->opo_config->get("templateH1"));
             $result = $this->render('pdf_html.php');
-            //print $result;die();
 
-            $renderer = new WLPlugPDFRendererPhantomJS();
-            $renderer->setPage("A4", "portrait", "2.5cm", "1cm", "2.5cm", "1cm");
-            $renderer->render($result, ["stream"=>true, "filename"=>"fonds.pdf" ]);
-            exit();
+            $export_file = "archives_export_pdf_".$id.".html";
+            $path = __DIR__."/../temp/".$export_file;
+            unlink($path);
+            file_put_contents($path, $result);
+            exec("cd ".__DIR__."/../temp && phantomjs rasterize.js archives_export_pdf_".$id.".html archives_export_pdf_".$id.".pdf A4", $output);
+
+            $files = [];
+            //var_dump(__DIR__."/../temp/".$id);die();
+            foreach(scandir(__DIR__."/../temp/".$id) as $file) {
+                if(strpos($file,"_")>0 && (substr($file, -4)==".pdf")) {
+                    $num = reset(explode("_", $file));
+                    if(!$num*1) {
+                        continue;
+                    }
+                    $files[] = $id."/".$file;
+                }
+
+            }
+            $file = __DIR__."/../temp/".$id.".pdf";
+            unlink($file);
+            
+            $command = "sleep 3 && cd ".__DIR__."/../temp && pdftk ".implode(" ", $files)." archives_export_pdf_".$id.".pdf cat output ".$id.".pdf";
+            exec($command, $output);
+
+			print json_encode(
+				[
+					"message"=>"Le fichier PDF est en cours de création",
+					"URL"=>"/gestion/app/plugins/archives/temp/".$id.".pdf"
+				]	
+			);
+
+			die();
         }
 
         private function ConvertValuesToIdsInsideTemplate($template) {
