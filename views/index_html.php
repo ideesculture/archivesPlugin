@@ -32,7 +32,7 @@
 </style>
 <script>
 	jQuery("document").ready(function() {
-		var url = "/gestion/index.php/archives/archives/Fetch";
+		var url = "<?php print __CA_URL_ROOT__; ?>/index.php/archives/archives/Fetch";
 		console.log(url);
 		jQuery.get(url, function(data){
 			jQuery('#hierarchyRoot').html(data);
