@@ -53,8 +53,12 @@
 			$type_id=$this->opo_config->get("root_type");
 			$query = "SELECT ca_object_labels.object_id, idno, name FROM ca_objects left join ca_object_labels ON ca_objects.object_id = ca_object_labels.object_id AND is_preferred=1 AND deleted=0";
 			if(!$id) {
+				if(!is_array($type_id)) {
+					$query .= " WHERE ca_objects.type_id =".$type_id." AND parent_id IS null AND deleted=0";
+				} else {
+					$query .= " WHERE ca_objects.type_id in (".implode(",",$type_id).") AND parent_id IS null AND deleted=0";
+				}
 				$this->view->setVar("object_id", false);
-				$query .= " WHERE ca_objects.type_id =".$type_id." and deleted=0";
 			} else {
 				$item = new ca_objects($id);
 				$this->view->setVar("item", $item);
@@ -71,17 +75,37 @@
  		public function Fetch($type="") {
 			$id = $this->request->getParameter("id", pInteger);
 			$level = $this->request->getParameter("level", pInteger);
+
+			$locale = $this->opo_config->get("locale");
 			$query = "SELECT ca_object_labels.object_id, idno, name FROM ca_objects left join ca_object_labels ON ca_objects.object_id = ca_object_labels.object_id AND is_preferred=1 AND deleted=0";
+			$type_id=$this->opo_config->get("root_type");
+
+
 			if(!$id) {
-				$query .= " WHERE ca_objects.type_id =".$this->opo_config->get('root_type')." and deleted=0";
+				if(!is_array($type_id)) {
+					$query .= " WHERE ca_objects.type_id =".$type_id." AND parent_id IS null AND ca_objects.deleted=0";
+				} else {
+					$query .= " WHERE ca_objects.type_id in (".implode(",",$type_id).") AND parent_id IS null AND ca_objects.deleted=0";
+					//var_dump($query);
+					//die();
+				}
 			} else {
 				$query .= " WHERE ca_objects.parent_id =".$id." and deleted=0";
 			}
-			$query .= " ORDER BY idno ASC";
+
+			$locale = $this->opo_config->get("locale");
+			if(isset($locale)) {
+				$query .= " and ca_object_labels.locale_id = ".$locale;
+			}
+			$order = $this->opo_config->get("order");
+			if(isset($order)) {
+				$query .= " ORDER BY ".$order;
+			}
+
 			$o_data = new Db();
 			$qr_result=$o_data->query($query);
-
 			$result_rows = [];
+
 			while($qr_result->nextRow()) {
 				$query2 = "SELECT count(object_id) as numchildren FROM ca_objects WHERE parent_id = ".$qr_result->get('object_id')." AND deleted=0";
 				$qr2_result = $o_data->query($query2);
@@ -130,9 +154,11 @@
             $path = __DIR__."/../temp/".$export_file;
             unlink($path);
             file_put_contents($path, $result);
+
             $command = "cd ".__DIR__."/../temp && phantomjs rasterize.js archives_export_pdf_".$id.".html archives_export_pdf_".$id.".pdf A4";
             //print $command;
             exec($command, $output);
+
 
             $files = [];
             //var_dump(__DIR__."/../temp/".$id);die();
