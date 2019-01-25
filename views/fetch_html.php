@@ -5,6 +5,8 @@
 	$level = intval($this->getVar("level"));
     $printLevel = $this->getVar("printLevel");
     if ($printLevel == "all") $printLevel=$level;
+    $pdfLevel = $this->getVar("pdfLevel");
+    if ($pdfLevel == "all") $pdfLevel=$level;
     $exportLevel = $this->getVar("exportLevel");
     if ($exportLevel == "all") $exportLevel=$level;
 
