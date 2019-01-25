@@ -10,16 +10,18 @@
     $exportLevel = $this->getVar("exportLevel");
     if ($exportLevel == "all") $exportLevel=$level;
 
-    function getTemplateForItem($item, $template) {
-        $type = $item->get("ca_objects.type_id");
-        if(isset($template[$type]) && trim($template[$type])) {
-            $return = $template[$type];
-        } else {
-            $return = $template["_default"];
-        }
-        return $return;
-    }
-
+	if(!function_exists(getTemplateForItem)) {
+	    function getTemplateForItem($item, $template) {
+	        $type = $item->get("ca_objects.type_id");
+	        if(isset($template[$type]) && trim($template[$type])) {
+	            $return = $template[$type];
+	        } else {
+	            $return = $template["_default"];
+	        }
+	        return $return;
+	    }
+	}
+	
 	$i=0;
 	foreach($result_rows as $row) {
 		$object_id = $row['object_id'];
