@@ -42,6 +42,7 @@
  			}*/
 
  			$this->opo_config = Configuration::load(__CA_APP_DIR__.'/plugins/archives/conf/archives.conf');
+ 			
 			$this->opo_list = new ca_lists("object_types");
         }
 
@@ -73,6 +74,7 @@
  		}
 
  		public function Fetch($type="") {
+
 			$id = $this->request->getParameter("id", pInteger);
 			$level = $this->request->getParameter("level", pInteger);
 
@@ -155,8 +157,7 @@
             unlink($path);
             file_put_contents($path, $result);
 
-            $command = "cd ".__DIR__."/../temp && phantomjs rasterize.js archives_export_pdf_".$id.".html archives_export_pdf_".$id.".pdf A4";
-            //print $command;
+            $command = "export QT_QPA_PLATFORM=offscreen && cd ".__DIR__."/../temp && phantomjs rasterize.js archives_export_pdf_".$id.".html archives_export_pdf_".$id.".pdf A4";
             exec($command, $output);
 
 
