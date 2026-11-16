@@ -31,32 +31,32 @@
 		if($row["numchildren"]>0) {
 			$row_template = str_ireplace(
 				"^expandButton",
-				"<a onclick='expandHierarchy(".$object_id.",".($level+1).");' id='expandButton".$object_id."'><i class=\"fa fa-plus-square-o\" aria-hidden=\"true\"></i>
+				"<a onclick='expandHierarchy(".$object_id.",".($level+1).");' id='expandButton".$object_id."'><i class=\"far fa-plus-square\" aria-hidden=\"true\"></i>
 </a>",
 				$row_template
 			);
 		} else {
-			$row_template = str_replace("^expandButton","<i class='fa fa-square-o'></i>",$row_template);
+			$row_template = str_replace("^expandButton","<i class='far fa-square'></i>",$row_template);
 		}
 
         $row_template = str_replace("^level",$level,$row_template);
 
         if($printLevel >= $level) {
-            $printButton = "<a href='/gestion/index.php/archives/archives/Export/id/".$object_id."' id='printButton".$object_id."'><i class=\"fa fa-print\" aria-hidden=\"true\"></i></a>";
+            $printButton = "<a href='/gestion/index.php/archives/archives/Export/id/".$object_id."' id='printButton".$object_id."'><i class=\"fas fa-print\" aria-hidden=\"true\"></i></a>";
         } else {
             $printButton = "";
         }
         $row_template = str_replace("^printButton",$printButton,$row_template);
 
         if($pdfLevel >= $level) {
-            $pdfButton = "<span onClick=\"generateArchivesPdf('".$object_id."');\" id='pdfButton".$object_id."'><a style='color:black;'><i class=\"fa fa-file-pdf-o\" aria-hidden=\"true\"></i></a></span>";
+            $pdfButton = "<span onClick=\"generateArchivesPdf('".$object_id."');\" id='pdfButton".$object_id."'><a style='color:black;'><i class=\"far fa-file-pdf\" aria-hidden=\"true\"></i></a></span>";
         } else {
             $pdfButton = "";
         }
         $row_template = str_replace("^pdfButton",$pdfButton,$row_template);
 
         if($exportLevel >= $level) {
-            $exportButton = "<a href='/gestion/index.php/archives/archives/Export/id/".$object_id."' id='exportButton".$object_id."'><i class=\"fa fa-print\" aria-hidden=\"true\"></i></a>";
+            $exportButton = "<a href='/gestion/index.php/archives/archives/Export/id/".$object_id."' id='exportButton".$object_id."'><i class=\"fas fa-print\" aria-hidden=\"true\"></i></a>";
         } else {
             $exportButton = "";
         }

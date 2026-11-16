@@ -40,10 +40,10 @@
 
 	});
 	var expandHierarchy = function(object_id,level) {
-		jQuery("#expandButton"+object_id).parent().prepend("<a onClick='shrinkHierarchy("+object_id+","+level+");' id='shrinkButton"+object_id+"'><i class='fa fa-minus-square-o'></i></a>");
+		jQuery("#expandButton"+object_id).parent().prepend("<a onClick='shrinkHierarchy("+object_id+","+level+");' id='shrinkButton"+object_id+"'><i class='far fa-minus-square'></i></a>");
 		jQuery("#expandButton"+object_id).remove();
-		//jQuery("#expandButton"+object_id+" i.fa").addClass("fa-square-o");
-		//jQuery("#expandButton"+object_id+" i.fa").removeClass("fa-plus-square-o");
+		//jQuery("#expandButton"+object_id+" i.fa").addClass("fa-square");
+		//jQuery("#expandButton"+object_id+" i.fa").removeClass("fa-plus-square");
 		var url = "<?php print __CA_URL_ROOT__; ?>/index.php/archives/archives/Fetch/id/"+object_id+"/level/"+level;
 		console.log(url);
 		jQuery.get(url, function(data){
@@ -52,19 +52,19 @@
 
 	}
 	var shrinkHierarchy = function(object_id,level) {
-		jQuery("#shrinkButton"+object_id).parent().prepend("<a onClick='expandHierarchy("+object_id+","+level+");' id='expandButton"+object_id+"'><i class='fa fa-plus-square-o'></i></a>");
+		jQuery("#shrinkButton"+object_id).parent().prepend("<a onClick='expandHierarchy("+object_id+","+level+");' id='expandButton"+object_id+"'><i class='far fa-plus-square'></i></a>");
 		jQuery("#shrinkButton"+object_id).remove();
 		jQuery("#hierarchyFor"+object_id).html("");
 	}
 	
 	var generateArchivesPdf = function(object_id) {
-		jQuery("#pdfButton"+object_id+" i").removeClass("fa-file-pdf-o").addClass("fa-spinner fa-pulse fa-fw");
+		jQuery("#pdfButton"+object_id+" i").removeClass("far fa-file-pdf").addClass("fas fa-spinner fa-pulse fa-fw");
 		url='/gestion/index.php/archives/archives/Pdf/id/'+object_id;
 		var that=object_id;
 		jQuery.getJSON(url, function(data) {
 			console.log(data);
 			jQuery("#pdfButton"+that).prop('onclick',null).off('click');
-			jQuery("#pdfButton"+that+" i").removeClass("fa-spinner fa-pulse fa-fw").addClass("fa-file-pdf-o");
+			jQuery("#pdfButton"+that+" i").removeClass("fas fa-spinner fa-pulse fa-fw").addClass("far fa-file-pdf");
 			jQuery("#pdfButton"+that+" a").attr("href", data.URL);
 			jQuery("#pdfButton"+that+" a").css("color", "#1ab3c8a");
 			
