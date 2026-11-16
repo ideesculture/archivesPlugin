@@ -10,7 +10,7 @@
     $exportLevel = $this->getVar("exportLevel");
     if ($exportLevel == "all") $exportLevel=$level;
 
-	if(!function_exists(getTemplateForItem)) {
+	if(!function_exists("getTemplateForItem")) {
 	    function getTemplateForItem($item, $template) {
 	        $type = $item->get("ca_objects.type_id");
 	        if(isset($template[$type]) && trim($template[$type])) {
@@ -51,7 +51,7 @@
         if($pdfLevel >= $level) {
             $pdfButton = "<span onClick=\"generateArchivesPdf('".$object_id."');\" id='pdfButton".$object_id."'><a style='color:black;'><i class=\"fa fa-file-pdf-o\" aria-hidden=\"true\"></i></a></span>";
         } else {
-            $printButton = "";
+            $pdfButton = "";
         }
         $row_template = str_replace("^pdfButton",$pdfButton,$row_template);
 

@@ -18,7 +18,8 @@
     require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
     require_once(__CA_MODELS_DIR__.'/ca_objects.php');
     require_once(__CA_MODELS_DIR__.'/ca_object_labels.php');
-    require_once(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/PhantomJS.php");
+    // CA 2.0 : PhantomJS.php n existe plus, la sortie PDF via PhantomJS est indisponible.
+    if (file_exists(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/PhantomJS.php")) { require_once(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/PhantomJS.php"); }
 	error_reporting(E_ERROR);
 
  	class ArchivesController extends ActionController {
