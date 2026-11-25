@@ -62,12 +62,18 @@
 		url='/gestion/index.php/archives/archives/Pdf/id/'+object_id;
 		var that=object_id;
 		jQuery.getJSON(url, function(data) {
-			console.log(data);
-			jQuery("#pdfButton"+that).prop('onclick',null).off('click');
 			jQuery("#pdfButton"+that+" i").removeClass("fas fa-spinner fa-pulse fa-fw").addClass("far fa-file-pdf");
-			jQuery("#pdfButton"+that+" a").attr("href", data.URL);
-			jQuery("#pdfButton"+that+" a").css("color", "#1ab3c8a");
-			
+			if (!data || !data.URL) {
+				// echec de generation : on garde le bouton actif et on affiche la raison
+				jQuery("#pdfButton"+that+" a").attr("title", (data && data.message) ? data.message : "Erreur de génération du PDF").css("color", "#c0392b");
+				return;
+			}
+			jQuery("#pdfButton"+that).prop('onclick',null).off('click');
+			jQuery("#pdfButton"+that+" a").attr("href", data.URL).attr("target", "_blank").attr("title", data.message);
+			jQuery("#pdfButton"+that+" a").css("color", "#1ab3c8");
+		}).fail(function() {
+			jQuery("#pdfButton"+that+" i").removeClass("fas fa-spinner fa-pulse fa-fw").addClass("far fa-file-pdf");
+			jQuery("#pdfButton"+that+" a").attr("title", "Erreur de génération du PDF").css("color", "#c0392b");
 		})
 	}
 </script>

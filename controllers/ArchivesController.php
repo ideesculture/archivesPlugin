@@ -18,8 +18,8 @@
     require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
     require_once(__CA_MODELS_DIR__.'/ca_objects.php');
     require_once(__CA_MODELS_DIR__.'/ca_object_labels.php');
-    // CA 2.0 : PhantomJS.php n existe plus, la sortie PDF via PhantomJS est indisponible.
-    if (file_exists(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/PhantomJS.php")) { require_once(__CA_LIB_DIR__."/core/Plugins/PDFRenderer/PhantomJS.php"); }
+    // Sortie PDF : wkhtmltopdf + pdfunite (paquets Debian wkhtmltopdf et poppler-utils), voir Pdf().
+    require_once(__CA_APP_DIR__.'/helpers/mediaPluginHelpers.php');
 	error_reporting(E_ERROR);
 
  	class ArchivesController extends ActionController {
@@ -153,38 +153,67 @@
             $this->view->setVar("template", $this->ConvertValuesToIdsInsideTemplate($this->opo_config->get("printTemplate")));
             $result = $this->render('pdf_html.php');
 
-            $export_file = "archives_export_pdf_".$id.".html";
-            $path = __DIR__."/../temp/".$export_file;
-            unlink($path);
-            file_put_contents($path, $result);
+            $temp_dir = realpath(__DIR__."/../temp");
+            $html_file = $temp_dir."/archives_export_pdf_".$id.".html";
+            $export_pdf = $temp_dir."/archives_export_pdf_".$id.".pdf";
+            $final_pdf = $temp_dir."/".$id.".pdf";
+            // wkhtmltopdf dessine les polices web (Google Fonts) en traces : le PDF n'a alors aucun texte
+            // recherchable ni copiable. Pour le PDF seulement, on retire l'@import : la police de repli
+            // (sans-serif, DejaVu sur Debian) est integree avec un vrai texte. L'impression HTML n'est pas touchee.
+            $result = preg_replace('/@import\s+url\(\s*["\']?https?:\/\/fonts\.googleapis\.com[^)]*\)\s*;?/i', '', $result);
+            @unlink($html_file);
+            file_put_contents($html_file, $result);
 
-            $command = "export QT_QPA_PLATFORM=offscreen && cd ".__DIR__."/../temp && phantomjs rasterize.js archives_export_pdf_".$id.".html archives_export_pdf_".$id.".pdf A4";
-            exec($command, $output);
+            // Rendu HTML -> PDF par wkhtmltopdf (remplace phantomjs, abandonne et absent des distributions).
+            // Chemin lu dans external_applications.conf de providence (wkhtmltopdf_app).
+            $wkhtmltopdf = caGetExternalApplicationPath('wkhtmltopdf');
+            if (!$wkhtmltopdf || !is_executable($wkhtmltopdf)) { $wkhtmltopdf = '/usr/bin/wkhtmltopdf'; }
+            @unlink($export_pdf);
+            $command = "timeout 240 ".escapeshellarg($wkhtmltopdf)." --quiet --encoding utf-8 --page-size A4"
+                ." --margin-top 15mm --margin-bottom 15mm --margin-left 12mm --margin-right 12mm"
+                ." --load-error-handling ignore --load-media-error-handling ignore"
+                ." ".escapeshellarg($html_file)." ".escapeshellarg($export_pdf)." 2>&1";
+            exec($command, $output, $ret);
 
-
-            $files = [];
-            //var_dump(__DIR__."/../temp/".$id);die();
-            foreach(scandir(__DIR__."/../temp/".$id) as $file) {
-                if(strpos($file,"_")>0 && (substr($file, -4)==".pdf")) {
-                    $num = reset(explode("_", $file));
-                    if(!$num*1) {
-                        continue;
-                    }
-                    $files[] = $id."/".$file;
-                }
-
+            if (!file_exists($export_pdf) || !filesize($export_pdf)) {
+                print json_encode(["message" => "Erreur : le PDF n'a pas pu être généré (wkhtmltopdf).", "URL" => null]);
+                die();
             }
-            $file = __DIR__."/../temp/".$id.".pdf";
-            unlink($file);
-            
-            $command = "sleep 3 && cd ".__DIR__."/../temp && pdftk ".implode(" ", $files)." archives_export_pdf_".$id.".pdf cat output ".$id.".pdf";
-            exec($command, $output);
+
+            // Pièces jointes eventuelles : temp/<id>/<n>_<nom>.pdf, placees avant l'export, dans l'ordre du dossier.
+            $files = [];
+            $attach_dir = $temp_dir."/".$id;
+            if (is_dir($attach_dir)) {
+                foreach (scandir($attach_dir) as $file) {
+                    if ((strpos($file, "_") > 0) && (substr($file, -4) == ".pdf")) {
+                        $parts = explode("_", $file);
+                        if (!((int)$parts[0])) { continue; }
+                        $files[] = $attach_dir."/".$file;
+                    }
+                }
+            }
+
+            // Ecriture sous un nom temporaire puis renommage : on ne sert jamais un PDF a moitie ecrit.
+            $tmp_pdf = $final_pdf.".tmp";
+            @unlink($tmp_pdf);
+            if (sizeof($files)) {
+                // Assemblage par pdfunite (poppler-utils), remplace pdftk.
+                $args = array_map('escapeshellarg', array_merge($files, [$export_pdf, $tmp_pdf]));
+                exec("timeout 120 pdfunite ".implode(" ", $args)." 2>&1", $output, $ret);
+            } else {
+                copy($export_pdf, $tmp_pdf);
+            }
+            if (!file_exists($tmp_pdf) || !filesize($tmp_pdf)) {
+                print json_encode(["message" => "Erreur : l'assemblage du PDF a échoué (pdfunite).", "URL" => null]);
+                die();
+            }
+            rename($tmp_pdf, $final_pdf);
 
 			print json_encode(
 				[
-					"message"=>"Le fichier PDF est en cours de création",
+					"message"=>"Le fichier PDF a été créé",
 					"URL"=>"/gestion/app/plugins/archives/temp/".$id.".pdf"
-				]	
+				]
 			);
 
 			die();
