@@ -29,6 +29,10 @@
 		cursor:pointer;
 		text-decoration: none;
 	}
+	span[id^="pdfButton"] {
+		margin-left: 6px;
+		cursor: pointer;
+	}
 </style>
 <script>
 	jQuery("document").ready(function() {
